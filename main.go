@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"os/exec"
 )
@@ -27,6 +28,7 @@ func writeToFile(content, filename string) error {
 func main() {
 	home := os.Getenv("HOME")
 	sshKey := os.Getenv("PLUGIN_SSH_KEY")
+	log.Printf("sshKey%s", sshKey)
 	droneGitSSHURL := os.Getenv("DRONE_GIT_SSH_URL")
 	droneCommitBranch := os.Getenv("DRONE_COMMIT_BRANCH")
 	droneCommit := os.Getenv("DRONE_COMMIT")
