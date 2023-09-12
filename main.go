@@ -23,9 +23,17 @@ func main() {
 	}
 	log.Println("SSH key path:", sshPath)
 	sshKey := os.Getenv("PLUGIN_SSH_KEY")
-	if err := os.WriteFile(fmt.Sprintf("%s/id_ed25519", sshPath), []byte(sshKey), 0600); err != nil {
+	sshKeyPath := fmt.Sprintf("%s/id_ed25519", sshPath)
+	log.Printf("SSH key path: %s", sshKeyPath)
+	if err := os.WriteFile(sshKeyPath, []byte(sshKey), 0600); err != nil {
 		fmt.Println("Failed to write SSH key:", err)
 		os.Exit(1)
+	}
+	fi, err := os.Stat(sshKeyPath)
+	if err != nil {
+		log.Fatalf("Failed to stat SSH key file: %v", err)
+	} else {
+		log.Printf("SSH key file perm: %o", fi.Mode().Perm())
 	}
 	log.Println("SSH key path:", sshPath)
 
