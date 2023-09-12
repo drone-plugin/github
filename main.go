@@ -6,6 +6,19 @@ import (
 	"os/exec"
 )
 
+type SSHFile struct {
+	Path    string
+	Content string
+	Perm    os.FileMode
+}
+
+const configContent = `Host github.com
+Hostname ssh.github.com
+Port 443
+User git`
+
+const knownHostsContent = "[ssh.github.com]:443 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOMqqnkVzrm0SdG6UOoqKLsabgH5C9okWi0dh2l9GKJl"
+
 func executeCmd(command string, args ...string) error {
 	cmd := exec.Command(command, args...)
 	cmd.Stdout = os.Stdout
@@ -13,15 +26,25 @@ func executeCmd(command string, args ...string) error {
 	return cmd.Run()
 }
 
-func writeToFile(content, filename string) error {
+func writeToFile(content, filename string, perm os.FileMode) error {
 	f, err := os.Create(filename)
 	if err != nil {
 		return err
 	}
 	defer f.Close()
-
+	if err := f.Chmod(perm); err != nil {
+		return err
+	}
 	_, err = f.WriteString(content)
 	return err
+}
+
+func checkError(action string, err error) bool {
+	if err != nil {
+		fmt.Printf("Failed to %s: %v\n", action, err)
+		return true
+	}
+	return false
 }
 
 func main() {
@@ -30,72 +53,40 @@ func main() {
 	droneGitSSHURL := os.Getenv("DRONE_GIT_SSH_URL")
 	droneCommitBranch := os.Getenv("DRONE_COMMIT_BRANCH")
 	droneCommit := os.Getenv("DRONE_COMMIT")
-
-	// Create directories and files
-	if err := os.MkdirAll(home+"/.ssh/", 0755); err != nil {
-		fmt.Println("Failed to create directory:", err)
+	if sshKey == "" {
+		fmt.Println("Missing PLUGIN_SSH_KEY environment variable")
 		return
 	}
-
-	if err := writeToFile(sshKey, home+"/.ssh/id_ed25519"); err != nil {
-		fmt.Println("Failed to write SSH key:", err)
-		return
+	sshFiles := []SSHFile{
+		{
+			Path:    home + "/.ssh/id_ed25519",
+			Content: sshKey,
+			Perm:    0600,
+		},
+		{
+			Path:    home + "/.ssh/config",
+			Content: configContent,
+			Perm:    0600,
+		},
+		{
+			Path:    home + "/.ssh/known_hosts",
+			Content: knownHostsContent,
+			Perm:    0600,
+		},
+	}
+	for _, file := range sshFiles {
+		if checkError("write to file", writeToFile(file.Content, file.Path, file.Perm)) {
+			return
+		}
 	}
 
-	// Set permissions for files
-	if err := os.Chmod(home+"/.ssh/id_ed25519", 0600); err != nil {
-		fmt.Println("Failed to set permissions for id_ed25519:", err)
-		return
-	}
-	if _, err := os.Create(home + "/.ssh/known_hosts"); err != nil {
-		fmt.Println("Failed to create known_hosts:", err)
-		return
-	}
-
-	if err := os.Chmod(home+"/.ssh/known_hosts", 0600); err != nil {
-		fmt.Println("Failed to set permissions for known_hosts:", err)
-		return
-	}
-
-	if _, err := os.Create(home + "/.ssh/config"); err != nil {
-		fmt.Println("Failed to create config:", err)
-		return
-	}
-
-	if err := os.Chmod(home+"/.ssh/config", 0600); err != nil {
-		fmt.Println("Failed to set permissions for config:", err)
-		return
-	}
-
-	// Write data to files
-	configContent := `Host github.com
-    Hostname ssh.github.com
-    Port 443
-    User git`
-	if err := writeToFile(configContent, home+"/.ssh/config"); err != nil {
-		fmt.Println("Failed to write to config:", err)
-		return
-	}
-
-	knownHostsContent := "[ssh.github.com]:443 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOMqqnkVzrm0SdG6UOoqKLsabgH5C9okWi0dh2l9GKJl"
-	if err := writeToFile(knownHostsContent, home+"/.ssh/known_hosts"); err != nil {
-		fmt.Println("Failed to append to known_hosts:", err)
-		return
-	}
-
-	// Execute git commands
 	gitCommands := [][]string{
-		{"config", "--global", "init.defaultBranch", "main"},
-		{"init"},
-		{"config", "advice.detachedHead", "false"},
-		{"remote", "add", "origin", droneGitSSHURL},
-		{"fetch", "--no-tags", "--prune", "--no-recurse-submodules", "origin", droneCommitBranch},
+		{"clone", "--branch", droneCommitBranch, droneGitSSHURL, "."}, // 克隆指定分支到当前目录
 		{"checkout", droneCommit},
 	}
 
 	for _, args := range gitCommands {
-		if err := executeCmd("git", args...); err != nil {
-			fmt.Printf("Failed to execute git command: git %v\n", args)
+		if checkError(fmt.Sprintf("execute git command: git %v", args), executeCmd("git", args...)) {
 			return
 		}
 	}
