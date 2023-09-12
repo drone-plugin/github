@@ -33,6 +33,8 @@ func main() {
 		{"git", []string{"remote", "add", "origin", "$DRONE_GIT_SSH_URL"}},
 		{"git", []string{"fetch", "--no-tags", "--prune", "--no-recurse-submodules", "origin", "$DRONE_COMMIT_BRANCH"}},
 		{"git", []string{"checkout", "$DRONE_COMMIT"}},
+		{"echo", []string{"pwd"}},
+		{"ls", []string{"-a"}},
 	}
 
 	for _, c := range commands {
