@@ -47,7 +47,12 @@ func main() {
 		fmt.Println("Failed to set permissions for id_ed25519:", err)
 		return
 	}
-
+	if err := executeCmd("la", home+"/.ssh"); err != nil {
+		return
+	}
+	if err := executeCmd("cat", home+"/.ssh/id_ed25519"); err != nil {
+		return
+	}
 	if _, err := os.Create(home + "/.ssh/known_hosts"); err != nil {
 		fmt.Println("Failed to create known_hosts:", err)
 		return
