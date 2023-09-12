@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"os/exec"
 )
@@ -20,14 +21,13 @@ func main() {
 		fmt.Println("Failed to create .ssh directory:", err)
 		os.Exit(1)
 	}
-
+	log.Println("SSH key path:", sshPath)
 	sshKey := os.Getenv("PLUGIN_SSH_KEY")
 	if err := os.WriteFile(fmt.Sprintf("%s/id_ed25519", sshPath), []byte(sshKey), 0600); err != nil {
 		fmt.Println("Failed to write SSH key:", err)
 		os.Exit(1)
 	}
-
-	// ...其他SSH设置...
+	log.Println("SSH key path:", sshPath)
 
 	configContent := `Host github.com
     Hostname ssh.github.com
@@ -43,6 +43,29 @@ func main() {
 	if err := os.WriteFile(fmt.Sprintf("%s/known_hosts", sshPath), []byte(knownHostsContent), 0600); err != nil {
 		fmt.Println("Failed to write known hosts:", err)
 		os.Exit(1)
+	}
+
+	if err := os.MkdirAll(sshPath, 0700); err != nil {
+		log.Printf("Failed to create .ssh directory: %v", err)
+	} else {
+		fi, err := os.Stat(sshPath)
+		if err != nil {
+			log.Printf("Failed to stat .ssh directory: %v", err)
+		} else {
+			log.Printf(".ssh directory perm: %o", fi.Mode().Perm())
+		}
+	}
+
+	if err := os.WriteFile(sshPath, []byte(sshKey), 0600); err != nil {
+		log.Printf("Failed to write SSH key: %v", err)
+
+	} else {
+		fi, err := os.Stat(sshPath)
+		if err != nil {
+			log.Printf("Failed to stat SSH key file: %v", err)
+		} else {
+			log.Printf("SSH key file perm: %o", fi.Mode().Perm())
+		}
 	}
 
 	// Git Operations
