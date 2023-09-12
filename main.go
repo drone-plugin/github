@@ -14,6 +14,7 @@ func runCommand(name string, arg ...string) error {
 }
 
 func main() {
+	fmt.Println("PATH:", os.Getenv("PATH"))
 	// Setup SSH key
 	sshPath := fmt.Sprintf("%s/.ssh", os.Getenv("HOME"))
 	if err := os.MkdirAll(sshPath, 0700); err != nil {
