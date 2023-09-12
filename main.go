@@ -57,6 +57,11 @@ func main() {
 		fmt.Println("Missing PLUGIN_SSH_KEY environment variable")
 		return
 	}
+	sshDir := home + "/.ssh/"
+	if err := os.MkdirAll(sshDir, 0700); err != nil { // 创建.ssh目录，并设置权限为0700
+		fmt.Println("Failed to create .ssh directory:", err)
+		return
+	}
 	sshFiles := []SSHFile{
 		{
 			Path:    home + "/.ssh/id_ed25519",
