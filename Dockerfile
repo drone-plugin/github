@@ -1,5 +1,5 @@
 FROM alpine:latest
 
 ADD  main /bin/
-RUN apk -Uuv add ca-certificates
+RUN apk add --no-cache git ca-certificates
 ENTRYPOINT /bin/main
