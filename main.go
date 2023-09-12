@@ -14,7 +14,6 @@ func runCommand(name string, arg ...string) error {
 }
 
 func main() {
-	fmt.Println("PATH:", os.Getenv("PATH"))
 	// Setup SSH key
 	sshPath := fmt.Sprintf("%s/.ssh", os.Getenv("HOME"))
 	if err := os.MkdirAll(sshPath, 0700); err != nil {
@@ -63,6 +62,7 @@ func main() {
 	}
 
 	gitURL := os.Getenv("DRONE_GIT_SSH_URL")
+	fmt.Println("Git URL:", gitURL)
 	if err := runCommand("git", "remote", "add", "origin", gitURL); err != nil {
 		fmt.Println("Failed to add git remote:", err)
 		os.Exit(1)
