@@ -62,19 +62,19 @@ func main() {
 		os.Exit(1)
 	}
 
-	gitURL := os.Getenv("PLUGIN_DRONE_GIT_SSH_URL")
+	gitURL := os.Getenv("DRONE_GIT_SSH_URL")
 	if err := runCommand("git", "remote", "add", "origin", gitURL); err != nil {
 		fmt.Println("Failed to add git remote:", err)
 		os.Exit(1)
 	}
 
-	gitBranch := os.Getenv("PLUGIN_DRONE_COMMIT_BRANCH")
+	gitBranch := os.Getenv("DRONE_COMMIT_BRANCH")
 	if err := runCommand("git", "fetch", "--no-tags", "--prune", "--no-recurse-submodules", "origin", gitBranch); err != nil {
 		fmt.Println("Failed to fetch git:", err)
 		os.Exit(1)
 	}
 
-	gitCommit := os.Getenv("PLUGIN_DRONE_COMMIT")
+	gitCommit := os.Getenv("DRONE_COMMIT")
 	if err := runCommand("git", "checkout", gitCommit); err != nil {
 		fmt.Println("Failed to checkout git:", err)
 		os.Exit(1)
