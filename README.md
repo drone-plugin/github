@@ -18,4 +18,4 @@ use 443 port
 ## Badges
 
 [![MIT License](https://img.shields.io/badge/License-MIT-green.svg)](https://choosealicense.com/licenses/mit/)
-[![Build Status](https://drone.zzfzzf.com/api/badges/zzfn/proxy-robot/status.svg)](https://drone.zzfzzf.com/zzfn/proxy-robot)
+[![Build Status](https://drone.ccw.es/api/badges/drone-plugin/github/status.svg)](https://drone.ccw.es/drone-plugin/github)
