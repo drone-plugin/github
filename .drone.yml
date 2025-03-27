@@ -27,6 +27,6 @@ steps:
         from_secret: docker_username
       password:
         from_secret: docker_password
-      repo: wwma/drone-github-clone
+      repo: nmtz/drone-github-clone
       tags:
         - latest
