@@ -4,7 +4,7 @@
 use 443 port
 ```yml
   - name: clone
-    image: wwma/drone-github-clone
+    image: nmtz/drone-github-clone
     settings:
       SSH_KEY:
         from_secret: ssh_key
